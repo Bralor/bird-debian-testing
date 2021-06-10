@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+showhelp() {
+    echo -e "USAGE $0 [-a <mips|arm|ppc>]"
+    echo
+    echo -e "\t-h\t\tshow this help"
+}
+
+while getopts ":a:h:" OPTION; do
+    case "${OPTION}" in
+        a)
+            ARG1=${OPTARG}
+            if [ "$ARG1" == "mips" ]; then
+                IMAGE="mips"
+                REGISTER="mips"
+                docker run --rm --privileged aptman/qus -- -r
+                docker run --rm --privileged aptman/qus -s -- -p "$REGISTER"
+                docker build --no-cache -t "$IMAGE"-stretch --build-arg IMAGE="$IMAGE" .
+
+            elif [ "$ARG1" == "arm" ]; then
+                IMAGE="armhf"
+                REGISTER="arm"
+                docker run --rm --privileged aptman/qus -- -r
+                docker run --rm --privileged aptman/qus -s -- -p "$REGISTER"
+                docker build --no-cache -t "$IMAGE"-stretch --build-arg IMAGE="$IMAGE" .
+
+            elif [ "$ARG1" == "ppc" ]; then
+                IMAGE="ppc64el"
+                REGISTER="ppc64le"
+                docker run --rm --privileged aptman/qus -- -r
+                docker run --rm --privileged aptman/qus -s -- -p "$REGISTER"
+                docker build --no-cache -t "$IMAGE"-stretch --build-arg IMAGE="$IMAGE" .
+
+            else
+                echo "Incorrect name of image"
+            fi
+            ;;
+        h)
+            showhelp
+            exit 0
+            ;;
+        *)
+            showhelp
+            exit 2
+            ;;
+    esac
+done
